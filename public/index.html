@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>URL Shortener</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full">
+      <div class="bg-white rounded-lg shadow-xl p-6 space-y-6">
+        <div class="text-center">
+          <h1 class="text-3xl font-bold text-gray-800 mb-2">URL Shortener</h1>
+          <p class="text-gray-600">Shorten your long URLs into compact links</p>
+        </div>
+
+        <form id="urlForm" class="space-y-4">
+          <div class="relative">
+            <input
+              type="text"
+              id="originalUrl"
+              placeholder="Enter your long URL here"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 outline-none"
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg"
+          >
+            Shorten URL
+          </button>
+        </form>
+
+        <div
+          id="result"
+          class="hidden mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200"
+        ></div>
+      </div>
+
+      <div class="mt-6 text-center text-gray-600 text-sm"></div>
+    </div>
+
+    <script>
+      const form = document.getElementById("urlForm");
+      const resultDiv = document.getElementById("result");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const urlInput = document.getElementById("originalUrl");
+        const url = urlInput.value;
+
+        try {
+          const submitButton = form.querySelector("button");
+          submitButton.innerHTML = `
+                    <svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                `;
+          submitButton.disabled = true;
+
+          const response = await fetch("http://localhost:3000/shorten", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
+          });
+
+          const data = await response.json();
+
+          submitButton.innerHTML = "Shorten URL";
+          submitButton.disabled = false;
+
+          resultDiv.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="text-gray-600 font-medium">Shortened URL:</div>
+                        <div class="flex items-center space-x-3">
+                            <a href="${data.short_url}" 
+                               target="_blank" 
+                               class="text-blue-600 hover:text-blue-700 font-medium truncate">
+                                ${data.short_url}
+                            </a>
+                            <button 
+                                onclick="copyToClipboard('${data.short_url}')"
+                                class="p-2 text-gray-500 hover:text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
+                                title="Copy to clipboard">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+          resultDiv.classList.remove("hidden");
+
+          urlInput.value = "";
+        } catch (error) {
+          console.error("Error:", error);
+          resultDiv.innerHTML = `
+                    <div class="text-red-600">
+                        An error occurred while shortening the URL. Please try again.
+                    </div>
+                `;
+          resultDiv.classList.remove("hidden");
+        }
+      });
+
+      async function copyToClipboard(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          const button = event.currentTarget;
+          const originalHTML = button.innerHTML;
+          button.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                `;
+          setTimeout(() => {
+            button.innerHTML = originalHTML;
+          }, 2000);
+        } catch (err) {
+          console.error("Failed to copy text: ", err);
+        }
+      }
+    </script>
+  </body>
+</html>
