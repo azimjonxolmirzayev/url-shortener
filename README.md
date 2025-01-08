@@ -205,11 +205,7 @@ Tizim ishlashini monitoring qilish uchun quyidagi ko'rsatkichlar kuzatiladi:
 4. Branch'ni push qiling (`git push origin feature/NewFeature`)
 5. Pull Request yarating
 
-## 📝 Litsenziya
-
-[MIT](LICENSE)
-
 ## 📞 Bog'lanish
 
 - GitHub: [@azimjonxolmirzayev](https://github.com/azimjonxolmirzayev)
-- Email: example@gmail.com
+- Email: azimjonxolmirzayev30@gmail.com
